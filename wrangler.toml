@@ -13,10 +13,6 @@ binding = "ASSETS"
 [ai]
 binding = "WORKERS_AI"
 
-[[services]]
-binding = "WORKER_SELF_REFERENCE"
-service = "lucas-blog"
-
 # Minimal resource bindings for open-source / Deploy to Cloudflare usage.
 # Modern Wrangler and Deploy buttons can auto-provision these resources.
 # `npm run cf:init` will replace them in `wrangler.local.toml` with concrete remote bindings.
