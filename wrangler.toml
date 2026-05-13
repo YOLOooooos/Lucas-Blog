@@ -23,9 +23,13 @@ service = "lucas-blog"
 
 [[d1_databases]]
 binding = "DB"
+database_name = "lucas-blog-db"
+database_id = "fd392ec9-8051-4169-a1ec-212eeb2074fb"
+remote = true
 
 [[r2_buckets]]
 binding = "IMAGES"
+bucket_name = "lucas-blog-images"
 
 # Optional Queue binding for background jobs. Uncomment after creating the queue.
 # [[queues.producers]]
@@ -36,7 +40,7 @@ binding = "IMAGES"
 # queue = "qiaomu-blog-background-jobs"
 
 [vars]
-NEXT_PUBLIC_SITE_URL = "https://your-domain.com"
+NEXT_PUBLIC_SITE_URL = "https://lucas-blog.zhaiyx2020start.workers.dev"
 AI_BASE_URL = "https://api.openai.com/v1"
 AI_MODEL = "gpt-4o-mini"
 WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
