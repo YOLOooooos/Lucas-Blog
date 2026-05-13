@@ -15,7 +15,9 @@ interface QueueBatch<T> {
 }
 
 const customWorker = {
-  fetch: handler.fetch,
+  fetch(request: Request, env: CloudflareEnv, ctx: ExecutionContext) {
+    return handler.fetch(request, env, ctx)
+  },
 
   async queue(batch: QueueBatch<BackgroundJob>, env: BackgroundJobEnv) {
     await consumeBackgroundJobBatch(batch, env)
