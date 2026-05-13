@@ -31,6 +31,10 @@ const HomeVariantC = dynamic<HomeProps>(() =>
   import('@/components/themes/HomeVariantC').then((module) => module.HomeVariantC)
 )
 
+const HomeVariantD = dynamic<HomeProps>(() =>
+  import('@/components/themes/HomeVariantD').then((module) => module.HomeVariantD)
+)
+
 function injectFont(id: string, href: string) {
   if (typeof document === 'undefined') return
   if (!document.getElementById(id)) {
@@ -51,16 +55,22 @@ export function HomeClient(props: HomeProps) {
 
   // Inject fonts on demand
   useEffect(() => {
-    if (theme === 'refined' || theme === 'terminal' || theme === 'editorial') {
+    if (theme === 'refined' || theme === 'terminal' || theme === 'editorial' || theme === 'lucas-lab') {
       injectFont(
         'qm-jetbrains-mono',
         'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap',
       )
     }
-    if (theme === 'editorial') {
+    if (theme === 'editorial' || theme === 'lucas-lab') {
       injectFont(
         'qm-noto-serif-sc',
         'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap',
+      )
+    }
+    if (theme === 'lucas-lab') {
+      injectFont(
+        'qm-ibm-plex-sans',
+        'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap',
       )
     }
   }, [theme])
@@ -70,6 +80,8 @@ export function HomeClient(props: HomeProps) {
       ? HomeVariantA
       : theme === 'editorial'
         ? HomeVariantB
+        : theme === 'lucas-lab'
+          ? HomeVariantD
         : theme === 'terminal'
           ? HomeVariantC
           : HomeDefault

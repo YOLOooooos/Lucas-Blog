@@ -1,7 +1,7 @@
 {
-  "name": "乔木博客",
-  "short_name": "乔木博客",
-  "description": "记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。",
+  "name": "Lucas Lab",
+  "short_name": "Lucas",
+  "description": "个人研究、产品实验与长期写作的工作台。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

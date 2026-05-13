@@ -706,6 +706,38 @@ body {
   --article-quote-nested-bg: rgba(196, 74, 42, 0.06);
 }
 
+/* ── 主题：Lucas Lab ── */
+[data-theme="lucas-lab"] {
+  --background: #f3eee4;
+  --foreground: #181513;
+  --editor-app-bg: #f3eee4;
+  --editor-panel: #f8f3ea;
+  --editor-soft: #eee7db;
+  --editor-line: #d7ccbc;
+  --editor-ink: #181513;
+  --editor-muted: #5f564a;
+  --editor-accent: #4c5539;
+  --editor-accent-ink: #faf7f0;
+  --editor-link: #4c5539;
+  --editor-code-bg: #f6f0e6;
+  --editor-code-border: #d7ccbc;
+  --editor-quote-bg: #f8f3ea;
+  --editor-selection: rgba(76, 85, 57, 0.14);
+  --stone-gray: #8b7f71;
+  --border-warm: #d7ccbc;
+  --logo-font: "Noto Serif SC", Georgia, serif;
+  --article-heading: #1a1613;
+  --article-body: #30281f;
+  --article-quote: #51473a;
+  --article-quote-border: #7f765d;
+  --article-quote-nested-border: #9a8b74;
+  --article-quote-nested-bg: rgba(76, 85, 57, 0.06);
+  --paper: #faf6ef;
+  --paper-soft: rgba(255, 252, 247, 0.78);
+  --paper-strong: #fefcf8;
+  --editor-highlight: #9a7c46;
+}
+
 /* ── 主题：AI终端 (terminal) ── */
 [data-theme="terminal"] {
   --background: #1a1c2e;
@@ -788,6 +820,29 @@ body {
   color: #c44a2a;
 }
 
+[data-theme="lucas-lab"] :is(.novel-prose, .rich-content) h1,
+[data-theme="lucas-lab"] :is(.novel-prose, .rich-content) h2,
+[data-theme="lucas-lab"] :is(.novel-prose, .rich-content) h3 {
+  color: var(--article-heading);
+  font-family: "Noto Serif SC", Georgia, serif;
+}
+
+[data-theme="lucas-lab"] :is(.novel-prose, .rich-content) blockquote {
+  border-left-color: var(--article-quote-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 243, 234, 0.9));
+  color: var(--article-quote);
+  border-radius: 0 12px 12px 0;
+}
+
+[data-theme="lucas-lab"] :is(.novel-prose, .rich-content) a {
+  color: var(--editor-link);
+}
+
+[data-theme="lucas-lab"] :is(.novel-prose, .rich-content) code {
+  background: var(--editor-code-bg);
+  border-color: var(--editor-code-border);
+}
+
 /* ── 终端主题：搜索面板深色 ── */
 [data-theme="terminal"] .search-panel {
   background: #1f2240 !important;
@@ -810,6 +865,25 @@ body {
   max-width: none;
   padding-left: 48px;
   padding-right: 48px;
+}
+
+[data-theme="lucas-lab"] .site-header-inner {
+  max-width: 1360px;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+[data-theme="lucas-lab"] .site-header {
+  border-bottom-style: solid !important;
+  border-bottom-color: var(--editor-line) !important;
+  background: linear-gradient(180deg, rgba(250, 246, 239, 0.94), rgba(243, 238, 228, 0.9)) !important;
+  backdrop-filter: saturate(1.2) blur(10px);
+}
+
+[data-theme="lucas-lab"] .site-header nav {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
 }
 
 /* 杂志编辑：header 2px 实线粗边 */
@@ -853,6 +927,10 @@ body {
   max-width: 860px;
 }
 
+[data-theme="lucas-lab"] .page-main {
+  max-width: 920px;
+}
+
 /* AI终端：860px */
 [data-theme="terminal"] .page-main {
   max-width: 860px;
@@ -870,12 +948,14 @@ body {
   }
 
   [data-theme="refined"] .site-header-inner,
+  [data-theme="lucas-lab"] .site-header-inner,
   [data-theme="editorial"] .site-header-inner,
   [data-theme="terminal"] .site-header-inner {
     padding-left: 16px;
     padding-right: 16px;
   }
 
+  [data-theme="lucas-lab"] .page-main,
   [data-theme="editorial"] .page-main,
   [data-theme="terminal"] .page-main {
     padding-left: 16px;
@@ -991,6 +1071,11 @@ body {
     padding-left: 16px !important;
     padding-right: 16px !important;
     padding-top: 24px !important;
+  }
+
+  .theme-home-lucaslab .lucaslab-home-shell {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 
   .theme-home-terminal .terminal-home-header {

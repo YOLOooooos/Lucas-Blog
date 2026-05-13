@@ -12,7 +12,7 @@ import { TwitterEmbedsEnhancer } from '@/components/TwitterEmbedsEnhancer'
 import { getSiteHeaderData } from '@/lib/site'
 import { getRelatedPosts } from '@/lib/related-content'
 import { getPublicContentCacheNamespace } from '@/lib/cache'
-import { getSiteUrl } from '@/lib/site-config'
+import { SITE_AUTHOR_NAME, SITE_GITHUB_URL, SITE_NAME, getSiteUrl } from '@/lib/site-config'
 import { resolvePostCoverImage } from '@/lib/default-cover-images'
 
 // Cloudflare Workers 缓存策略
@@ -49,7 +49,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.description,
       robots: searchIndexable ? undefined : { index: false, follow: false },
-      authors: [{ name: '向阳乔木' }],
+      authors: [{ name: SITE_AUTHOR_NAME }],
       alternates: {
         canonical: `${baseUrl}/${post.slug}`,
       },
@@ -59,13 +59,11 @@ export async function generateMetadata({
         type: 'article',
         publishedTime: new Date(post.published_at * 1000).toISOString(),
         modifiedTime: new Date(post.updated_at * 1000).toISOString(),
-        authors: ['向阳乔木'],
+        authors: [SITE_AUTHOR_NAME],
         images: [{ url: ogImage }],
       },
       twitter: {
         card: 'summary_large_image' as const,
-        site: '@vista8',
-        creator: '@vista8',
         title: post.title,
         description: post.description || undefined,
         images: [ogImage],
@@ -203,8 +201,8 @@ export default async function PostPage({
             headline: post.title,
             description: post.description || '',
             image: ogImage,
-            author: { '@type': 'Person', name: '向阳乔木', url: 'https://x.com/vista8' },
-            publisher: { '@type': 'Organization', name: '乔木博客', url: baseUrl, logo: { '@type': 'ImageObject', url: `${baseUrl}/icon-512.png` } },
+            author: { '@type': 'Person', name: SITE_AUTHOR_NAME, url: SITE_GITHUB_URL },
+            publisher: { '@type': 'Organization', name: SITE_NAME, url: baseUrl, logo: { '@type': 'ImageObject', url: `${baseUrl}/icon-512.png` } },
             datePublished: new Date(post.published_at * 1000).toISOString(),
             dateModified: new Date(post.updated_at * 1000).toISOString(),
             mainEntityOfPage: { '@type': 'WebPage', '@id': `${baseUrl}/${post.slug}` },
