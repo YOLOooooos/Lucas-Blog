@@ -52,6 +52,7 @@ jobs:
           CI: true
           NEXT_TELEMETRY_DISABLED: "1"
           WRANGLER_SEND_METRICS: "false"
+          DEPLOY_WITH_WRANGLER: "1"
           SKIP_D1_MIGRATIONS: "1"
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

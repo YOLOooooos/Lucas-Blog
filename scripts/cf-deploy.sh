@@ -32,4 +32,9 @@ else
   fi
 fi
 
-npx opennextjs-cloudflare deploy -c "${CONFIG_PATH}"
+if [[ "${DEPLOY_WITH_WRANGLER:-0}" == "1" ]]; then
+  echo "==> deploying built OpenNext worker with Wrangler"
+  npx wrangler deploy .open-next/worker.js -c "${CONFIG_PATH}"
+else
+  npx opennextjs-cloudflare deploy -c "${CONFIG_PATH}"
+fi
