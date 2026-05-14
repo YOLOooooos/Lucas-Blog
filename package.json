@@ -12,6 +12,8 @@
     "preview": "bash scripts/cf-preview.sh",
     "preview:remote": "PREVIEW_REMOTE=1 bash scripts/cf-preview.sh",
     "deploy": "bash scripts/cf-deploy.sh",
+    "cf:migrate": "bash scripts/cf-apply-d1-migrations.sh",
+    "cf:repair-fts": "npm run cf:migrate",
     "worktree:add": "bash scripts/worktree-add.sh",
     "worktree:prune": "git worktree prune",
     "cf-typegen": "bash scripts/cf-typegen.sh",

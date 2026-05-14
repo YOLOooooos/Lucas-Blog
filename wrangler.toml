@@ -22,6 +22,8 @@ binding = "DB"
 database_name = "lucas-blog-db"
 database_id = "fd392ec9-8051-4169-a1ec-212eeb2074fb"
 remote = true
+migrations_table = "d1_remote_migrations"
+migrations_dir = "db/remote-migrations"
 
 [[r2_buckets]]
 binding = "IMAGES"

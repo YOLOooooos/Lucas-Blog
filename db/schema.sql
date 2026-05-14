@@ -40,12 +40,15 @@ CREATE TRIGGER posts_ai AFTER INSERT ON posts BEGIN
 END;
 
 CREATE TRIGGER posts_au AFTER UPDATE ON posts BEGIN
-  UPDATE posts_fts SET title = new.title, content = new.content
-  WHERE rowid = new.id;
+  INSERT INTO posts_fts(posts_fts, rowid, title, content)
+  VALUES('delete', old.id, old.title, old.content);
+  INSERT INTO posts_fts(rowid, title, content)
+  VALUES (new.id, new.title, new.content);
 END;
 
 CREATE TRIGGER posts_ad AFTER DELETE ON posts BEGIN
-  DELETE FROM posts_fts WHERE rowid = old.id;
+  INSERT INTO posts_fts(posts_fts, rowid, title, content)
+  VALUES('delete', old.id, old.title, old.content);
 END;
 
 -- 分类统计表
