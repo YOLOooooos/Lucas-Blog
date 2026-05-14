@@ -1,12 +1,5 @@
 const DEV_SITE_URL = 'http://localhost:3000'
-const DEFAULT_PRODUCTION_SITE_URL = 'https://lucas-blog.zhaiyx2020start.workers.dev'
-
-export const SITE_NAME = 'Lucas Lab'
-export const SITE_AUTHOR_NAME = 'Lucas'
-export const SITE_DESCRIPTION = '个人研究、产品实验与长期写作的工作台。'
-export const SITE_TAGLINE = 'Build · Validate · Record'
-export const SITE_GITHUB_URL = 'https://github.com/YOLOooooos/'
-export const SITE_EMAIL = 'zhaiyx2020start@gmail.com'
+const DEFAULT_PRODUCTION_SITE_URL = 'https://blog.qiaomu.ai'
 
 function parseSiteUrl(value: string): URL | null {
   try {

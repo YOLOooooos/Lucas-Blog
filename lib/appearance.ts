@@ -18,11 +18,6 @@ export const THEME_OPTIONS = [
     description: '更强视觉层次的刊物风格',
   },
   {
-    id: 'lucas-lab',
-    label: 'Lucas Lab',
-    description: '纸张感与研究室气质并存的个人工作台',
-  },
-  {
     id: 'terminal',
     label: 'AI 终端',
     description: '偏技术感的深色终端界面',
