@@ -7,10 +7,10 @@ import {
   appendStoredHistoryItem,
   LOCAL_HISTORY_UPDATED_EVENT,
   readStoredHistory,
-  startBackgroundTask,
 } from '@/lib/client-background-task'
 import { renderMarkdownToHtml, replaceEditorRangeWithMarkdown } from '@/lib/editor-markdown'
 import { useToast } from '@/components/Toast'
+import { buildTextAiPromptCopyText } from '@/lib/ai-prompt-copy'
 
 interface AiActionItem {
   id: number
@@ -317,58 +317,98 @@ export function AIModal({
     return () => window.cancelAnimationFrame(frame)
   }, [hasSelectionContext, initialContext, isOpen])
 
-  const applyAiAction = (actionKey: string, customInput?: string, actionLabel?: string) => {
+  const applyAiAction = async (actionKey: string, customInput?: string, actionLabel?: string) => {
     if (!effectiveInputText || aiLoadingRef.current) return
 
     const promptLabel = actionLabel || customInput || '自定义提问'
+    const controller = new AbortController()
 
-    requestClose()
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = controller
+    aiLoadingRef.current = true
+    setAiLoading(true)
+    setAiOutput('')
+    setAiError('')
+    setCopied(false)
+    setHistoryOpen(false)
 
-    startBackgroundTask({
-      toast,
-      errorPrefix: 'AI 处理失败',
-      run: async () => {
-        const res = await fetch('/api/editor/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: actionKey,
-            text: effectiveInputText,
-            ...(customInput ? { customPrompt: customInput } : {}),
-          }),
-        })
+    try {
+      const res = await fetch('/api/editor/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          action: actionKey,
+          text: effectiveInputText,
+          ...(customInput ? { customPrompt: customInput } : {}),
+        }),
+      })
 
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({ error: 'AI 处理失败' })) as { error?: string }
-          throw new Error(errData.error || 'AI 处理失败')
-        }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: 'AI 处理失败' })) as { error?: string }
+        throw new Error(errData.error || 'AI 处理失败')
+      }
 
-        if (!res.body) throw new Error('无响应流')
-        const reader = res.body.getReader()
-        if (!reader) throw new Error('无法读取响应流')
+      if (!res.body) throw new Error('无响应流')
+      const reader = res.body.getReader()
+      if (!reader) throw new Error('无法读取响应流')
 
-        const decoder = new TextDecoder()
-        let output = ''
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          output += decoder.decode(value, { stream: true })
-        }
-        output += decoder.decode()
+      const decoder = new TextDecoder()
+      let output = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        output += decoder.decode(value, { stream: true })
+        setAiOutput(output)
+      }
+      output += decoder.decode()
+      setAiOutput(output)
 
-        if (!output.trim()) throw new Error('AI 返回为空')
-        return output
-      },
-      onSuccess: (output) => {
-        storeHistoryItem(output, promptLabel)
-      },
-    })
+      if (!output.trim()) throw new Error('AI 返回为空')
+      storeHistoryItem(output, promptLabel)
+    } catch (nextError) {
+      if (nextError instanceof DOMException && nextError.name === 'AbortError') return
+      setAiError(nextError instanceof Error ? nextError.message : 'AI 处理失败')
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null
+      }
+      aiLoadingRef.current = false
+      setAiLoading(false)
+    }
   }
 
   const handleCustomSubmit = () => {
     if (!customPrompt.trim() || aiLoading) return
-    applyAiAction('custom', customPrompt.trim(), customPrompt.trim())
+    void applyAiAction('custom', customPrompt.trim(), customPrompt.trim())
     setCustomPrompt('')
+  }
+
+  const copyPromptToClipboard = async ({
+    actionLabel,
+    actionDescription,
+    customInstruction,
+  }: {
+    actionLabel?: string
+    actionDescription?: string
+    customInstruction?: string
+  }) => {
+    const copyText = buildTextAiPromptCopyText({
+      actionLabel,
+      actionDescription,
+      customInstruction,
+      contextLabel: effectiveContext === 'selection' ? '选中文本' : '标题和正文',
+      inputText: effectiveInputText,
+    })
+
+    if (!copyText) return
+
+    try {
+      await navigator.clipboard.writeText(copyText)
+      toast.success('提示词已复制，可粘贴到其他 AI 系统', 2400)
+    } catch {
+      toast.error('复制失败，请手动复制提示词', 3200)
+    }
   }
 
   const insertAiBelow = (content = aiOutput) => {
@@ -498,8 +538,20 @@ export function AIModal({
             className="w-full rounded-lg border border-[var(--editor-line)] bg-white pl-10 pr-3 py-2.5 text-sm text-[var(--editor-ink)] placeholder:text-[var(--stone-gray)] outline-none focus:border-[var(--editor-accent)] focus:ring-1 focus:ring-[var(--editor-accent)] disabled:opacity-50"
           />
         </div>
-        <div className="text-[11px] text-[var(--editor-muted)]">
-          提交后会在后台生成，完成后可在历史里复制、插入或再次应用。
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--editor-muted)]">
+          <span>提交后会在当前窗口显示等待和生成结果。</span>
+          <button
+            type="button"
+            onClick={() => copyPromptToClipboard({
+              actionLabel: '自定义提问',
+              customInstruction: customPrompt.trim(),
+            })}
+            disabled={!effectiveInputText || !customPrompt.trim()}
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--editor-line)] px-2.5 py-1 transition hover:bg-[var(--editor-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Copy className="h-3 w-3" />
+            复制提示词
+          </button>
         </div>
 
         {!aiOutput && !aiLoading && !historyOpen && (
@@ -507,16 +559,26 @@ export function AIModal({
             <div className="mb-2 text-xs font-medium text-[var(--editor-muted)]">
               {effectiveContext === 'selection' ? '快捷操作' : '基于全文的快捷操作'}
             </div>
+            <div className="mb-2 text-[11px] text-[var(--editor-muted)]">
+              右键任一快捷操作可复制可外部复用的提示词。
+            </div>
             <div className="flex flex-wrap gap-2">
               {effectiveContext === 'selection'
                 ? aiActions.map((action) => (
                   <button
                     key={action.id}
                     type="button"
-                    onClick={() => applyAiAction(action.action_key, undefined, action.label)}
+                    onClick={() => void applyAiAction(action.action_key, undefined, action.label)}
+                    onContextMenu={(event) => {
+                      event.preventDefault()
+                      void copyPromptToClipboard({
+                        actionLabel: action.label,
+                        actionDescription: action.description,
+                      })
+                    }}
                     disabled={aiLoading}
                     className="rounded-full border border-[var(--editor-line)] bg-white px-4 py-1.5 text-sm text-[var(--editor-ink)] transition hover:border-[var(--editor-accent)] hover:bg-[var(--editor-soft)] disabled:opacity-50"
-                    title={action.description}
+                    title={`${action.description}；右键复制提示词`}
                   >
                     {action.label}
                   </button>
@@ -525,10 +587,18 @@ export function AIModal({
                   <button
                     key={action.id}
                     type="button"
-                    onClick={() => applyAiAction('custom', action.prompt, action.label)}
+                    onClick={() => void applyAiAction('custom', action.prompt, action.label)}
+                    onContextMenu={(event) => {
+                      event.preventDefault()
+                      void copyPromptToClipboard({
+                        actionLabel: action.label,
+                        actionDescription: action.description,
+                        customInstruction: action.prompt,
+                      })
+                    }}
                     disabled={aiLoading || !hasDocumentContext}
                     className="rounded-full border border-[var(--editor-line)] bg-white px-4 py-1.5 text-sm text-[var(--editor-ink)] transition hover:border-[var(--editor-accent)] hover:bg-[var(--editor-soft)] disabled:opacity-50"
-                    title={action.description}
+                    title={`${action.description}；右键复制提示词`}
                   >
                     {action.label}
                   </button>

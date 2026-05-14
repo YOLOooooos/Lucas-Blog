@@ -6,6 +6,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Copy,
   History,
   Image as ImageIcon,
   Loader2,
@@ -28,6 +29,7 @@ import {
   type AIImageAspectRatio,
   type AIImageResolution,
 } from '@/lib/ai-image-options'
+import { buildImageAiPromptCopyText } from '@/lib/ai-prompt-copy'
 
 interface ImageActionItem {
   id: number
@@ -366,6 +368,35 @@ export function ImageGenerationModal({
     selectedResolution,
   ])
 
+  const copyImagePromptToClipboard = useCallback(async (explicitPrompt?: string) => {
+    const copyText = explicitPrompt?.trim() || buildImageAiPromptCopyText({
+      userPrompt: prompt,
+      actionLabel: selectedActionConfig?.label,
+      actionDescription: selectedActionConfig?.description,
+      contextText,
+      aspectRatioLabel: getAiImageAspectRatioLabel(selectedAspectRatio),
+      resolutionLabel: getAiImageResolutionLabel(selectedResolution),
+      hasReferenceImage: Boolean(referenceImageUrl),
+    })
+
+    if (!copyText.trim()) return
+
+    try {
+      await navigator.clipboard.writeText(copyText)
+      toast.success('图片提示词已复制，可粘贴到其他 AI 系统', 2400)
+    } catch {
+      toast.error('复制失败，请手动复制提示词', 3200)
+    }
+  }, [
+    contextText,
+    prompt,
+    referenceImageUrl,
+    selectedActionConfig,
+    selectedAspectRatio,
+    selectedResolution,
+    toast,
+  ])
+
   const handleGenerate = useCallback(async () => {
     if (!canGenerate || generating) return
 
@@ -383,6 +414,8 @@ export function ImageGenerationModal({
 
       startBackgroundTask({
         toast,
+        startedMessage: '图片生成中，可以继续编辑，完成后会写入历史记录',
+        successMessage: '图片生成完成，已保存到历史记录',
         errorPrefix: '图片生成失败',
         run: requestImage,
         onSuccess: (image) => {
@@ -633,17 +666,26 @@ export function ImageGenerationModal({
                     </div>
                   ) : null}
 
-                  <div className="flex items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() => void handleGenerate()}
-                      disabled={!canGenerate || generating}
-                      className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--editor-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                      {result ? '重新生成' : '开始生成'}
-                    </button>
-                  </div>
+                <div className="flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void copyImagePromptToClipboard()}
+                    disabled={!canGenerate}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[var(--editor-line)] px-4 py-2 text-sm font-medium text-[var(--editor-ink)] transition hover:bg-[var(--editor-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Copy className="h-4 w-4" />
+                    复制提示词
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleGenerate()}
+                    disabled={!canGenerate || generating}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--editor-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    {result ? '重新生成' : '开始生成'}
+                  </button>
+                </div>
                 </div>
               </div>
             </div>
@@ -742,14 +784,24 @@ export function ImageGenerationModal({
 
                         {result.revisedPrompt ? (
                           <div className="mt-3">
-                            <button
-                              type="button"
-                              onClick={() => setShowRevisedPrompt((value) => !value)}
-                              className="inline-flex items-center gap-1 text-xs font-medium text-[var(--editor-muted)] transition hover:text-[var(--editor-ink)]"
-                            >
-                              {showRevisedPrompt ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                              查看模型润色后的提示词
-                            </button>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={() => setShowRevisedPrompt((value) => !value)}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--editor-muted)] transition hover:text-[var(--editor-ink)]"
+                              >
+                                {showRevisedPrompt ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                                查看模型润色后的提示词
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void copyImagePromptToClipboard(result.revisedPrompt)}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--editor-muted)] transition hover:text-[var(--editor-ink)]"
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                                复制润色提示词
+                              </button>
+                            </div>
                             {showRevisedPrompt ? (
                               <div className="mt-2 whitespace-pre-wrap rounded-xl border border-[var(--editor-line)] bg-white px-3 py-3 text-xs leading-6 text-[var(--editor-ink)]">
                                 {result.revisedPrompt}
