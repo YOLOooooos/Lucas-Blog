@@ -175,16 +175,56 @@ export async function ensureAiPostGeneratorInfrastructure(
     await db.prepare(`
       UPDATE ai_post_generators
       SET text_profile_id = ?
-      WHERE target_key IN ('summary', 'tags', 'slug') AND text_profile_id IS NULL
+      WHERE target_key IN ('summary', 'tags', 'slug')
+        AND (
+          text_profile_id IS NULL
+          OR NOT EXISTS (
+            SELECT 1
+            FROM ai_provider_profiles
+            WHERE ai_provider_profiles.id = ai_post_generators.text_profile_id
+          )
+        )
     `).bind(defaultTextProfileId).run()
+  } else {
+    await db.prepare(`
+      UPDATE ai_post_generators
+      SET text_profile_id = NULL
+      WHERE target_key IN ('summary', 'tags', 'slug')
+        AND text_profile_id IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1
+          FROM ai_provider_profiles
+          WHERE ai_provider_profiles.id = ai_post_generators.text_profile_id
+        )
+    `).run()
   }
 
   if (defaultImageProfileId) {
     await db.prepare(`
       UPDATE ai_post_generators
       SET image_profile_id = ?
-      WHERE target_key = 'cover' AND image_profile_id IS NULL
+      WHERE target_key = 'cover'
+        AND (
+          image_profile_id IS NULL
+          OR NOT EXISTS (
+            SELECT 1
+            FROM ai_image_provider_profiles
+            WHERE ai_image_provider_profiles.id = ai_post_generators.image_profile_id
+          )
+        )
     `).bind(defaultImageProfileId).run()
+  } else {
+    await db.prepare(`
+      UPDATE ai_post_generators
+      SET image_profile_id = NULL
+      WHERE target_key = 'cover'
+        AND image_profile_id IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1
+          FROM ai_image_provider_profiles
+          WHERE ai_image_provider_profiles.id = ai_post_generators.image_profile_id
+        )
+    `).run()
   }
 }
 

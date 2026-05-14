@@ -279,6 +279,11 @@ export async function DELETE(req: NextRequest) {
   } else {
     await db.prepare('UPDATE ai_actions SET profile_id = NULL WHERE profile_id = ?').bind(id).run()
   }
+  await db.prepare(`
+    UPDATE ai_post_generators
+    SET text_profile_id = ?, updated_at = strftime('%s', 'now')
+    WHERE target_key IN ('summary', 'tags', 'slug') AND text_profile_id = ?
+  `).bind(fallbackId ?? null, id).run()
 
   return NextResponse.json({ success: true })
 }

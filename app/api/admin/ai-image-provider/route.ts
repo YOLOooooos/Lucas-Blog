@@ -259,6 +259,11 @@ export async function DELETE(req: NextRequest) {
   if ((boundCount?.count ?? 0) > 0) {
     await db.prepare('UPDATE ai_image_actions SET profile_id = ? WHERE profile_id = ?').bind(defaultId ?? null, id).run()
   }
+  await db.prepare(`
+    UPDATE ai_post_generators
+    SET image_profile_id = ?, updated_at = strftime('%s', 'now')
+    WHERE target_key = 'cover' AND image_profile_id = ?
+  `).bind(defaultId ?? null, id).run()
 
   return NextResponse.json({ success: true })
 }

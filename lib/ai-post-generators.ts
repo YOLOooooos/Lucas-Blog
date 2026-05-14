@@ -95,6 +95,92 @@ function readFlag(value: unknown): boolean {
   return typeof value === 'string' && ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase())
 }
 
+function readProfileId(value: unknown): number | null {
+  return Number.isFinite(value) && Number(value) > 0 ? Number(value) : null
+}
+
+async function repairGeneratorProfileBinding(
+  db: D1Database,
+  target: AiPostGeneratorTarget,
+  column: 'text_profile_id' | 'image_profile_id',
+  staleProfileId: number,
+  nextProfileId: number | null,
+) {
+  await db.prepare(`
+    UPDATE ai_post_generators
+    SET ${column} = ?, updated_at = strftime('%s', 'now')
+    WHERE target_key = ? AND ${column} = ?
+  `).bind(nextProfileId, target, staleProfileId).run()
+}
+
+async function resolveTextProfileWithFallback(
+  generator: AiPostGeneratorRow,
+  db: D1Database,
+  secret: string,
+) {
+  const preferredProfileId = readProfileId(generator.text_profile_id)
+  if (!preferredProfileId || typeof db.prepare !== 'function') {
+    return resolveAiProfileConfig(db, secret, preferredProfileId ?? undefined)
+  }
+
+  const preferredExists = await db.prepare(`
+    SELECT id
+    FROM ai_provider_profiles
+    WHERE id = ?
+    LIMIT 1
+  `).bind(preferredProfileId).first<{ id: number }>()
+
+  if (!preferredExists?.id) {
+    const fallbackProfile = await resolveAiProfileConfig(db, secret)
+    if (fallbackProfile) {
+      await repairGeneratorProfileBinding(
+        db,
+        generator.target_key,
+        'text_profile_id',
+        preferredProfileId,
+        fallbackProfile.id,
+      )
+    }
+    return fallbackProfile
+  }
+
+  return resolveAiProfileConfig(db, secret, preferredProfileId)
+}
+
+async function resolveImageProfileWithFallback(
+  generator: AiPostGeneratorRow,
+  db: D1Database,
+  secret: string,
+) {
+  const preferredProfileId = readProfileId(generator.image_profile_id)
+  if (!preferredProfileId || typeof db.prepare !== 'function') {
+    return resolveAiImageProfileConfig(db, secret, preferredProfileId ?? undefined)
+  }
+
+  const preferredExists = await db.prepare(`
+    SELECT id
+    FROM ai_image_provider_profiles
+    WHERE id = ?
+    LIMIT 1
+  `).bind(preferredProfileId).first<{ id: number }>()
+
+  if (!preferredExists?.id) {
+    const fallbackProfile = await resolveAiImageProfileConfig(db, secret)
+    if (fallbackProfile) {
+      await repairGeneratorProfileBinding(
+        db,
+        generator.target_key,
+        'image_profile_id',
+        preferredProfileId,
+        fallbackProfile.id,
+      )
+    }
+    return fallbackProfile
+  }
+
+  return resolveAiImageProfileConfig(db, secret, preferredProfileId)
+}
+
 async function runTextGenerator(
   config: TextRuntime,
   messages: Array<{ role: 'system' | 'user'; content: string }>,
@@ -378,11 +464,7 @@ async function resolveTextRuntime(
   }
 
   const secret = resolveAiConfigSecret(env as Record<string, unknown> | undefined)
-  const profile = await resolveAiProfileConfig(
-    db,
-    secret,
-    Number.isFinite(generator.text_profile_id) ? Number(generator.text_profile_id) : undefined,
-  )
+  const profile = await resolveTextProfileWithFallback(generator, db, secret)
 
   if (!profile) {
     throw new Error('请先在后台配置可用的文本模型')
@@ -556,11 +638,7 @@ export async function generatePostCover(
     image = await generateWorkersAiCover(generator, input)
   } else {
     const secret = resolveAiConfigSecret(input.env as Record<string, unknown> | undefined)
-    const profile = await resolveAiImageProfileConfig(
-      input.db,
-      secret,
-      Number.isFinite(generator.image_profile_id) ? Number(generator.image_profile_id) : undefined,
-    )
+    const profile = await resolveImageProfileWithFallback(generator, input.db, secret)
 
     if (!profile) {
       throw new Error('请先在后台配置可用的图片模型')
