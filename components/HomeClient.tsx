@@ -14,6 +14,8 @@ export interface HomeProps {
   posts: PostWithTags[]
   categories: SiteCategoryLink[]
   navLinks: SiteNavLink[]
+  siteTitle: string
+  siteOwnerName: string
   currentPage: number
   totalPages: number
   categorySlugMap: Record<string, string>

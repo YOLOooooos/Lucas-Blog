@@ -102,6 +102,8 @@ export function HomeVariantB({
   initialTheme,
   posts,
   navLinks,
+  siteTitle,
+  siteOwnerName,
   currentPage,
   totalPages,
 }: HomeProps) {
@@ -126,7 +128,7 @@ export function HomeVariantB({
             fontFamily: '"Noto Serif SC", "Source Han Serif SC", Georgia, serif',
             color: FG,
           }}>
-            乔木<span style={{ color: ACCENT }}>·</span>博客
+            {siteTitle}
           </h1>
         </Link>
         <div className="editorial-masthead-meta" style={{
@@ -361,12 +363,12 @@ export function HomeVariantB({
         fontFamily: '"JetBrains Mono", ui-monospace, monospace',
         letterSpacing: '0.1em',
       }}>
-        <span>© {new Date().getFullYear()} 乔木博客</span>
+        <span>© {new Date().getFullYear()} {siteTitle}</span>
         <span>独立 · 不商业化 · RSS 友好</span>
       </div>
 
       {/* Standard footer with admin entry */}
-      <SiteFooter />
+      <SiteFooter siteOwnerName={siteOwnerName} />
     </div>
   )
 }

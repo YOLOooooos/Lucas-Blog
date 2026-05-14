@@ -19,6 +19,8 @@ export function HomeDefault({
   posts,
   categories,
   navLinks,
+  siteTitle,
+  siteOwnerName,
   currentPage,
   totalPages,
   categorySlugMap,
@@ -29,6 +31,7 @@ export function HomeDefault({
         initialTheme={initialTheme}
         navLinks={navLinks}
         categories={categories}
+        siteTitle={siteTitle}
       />
       <main className="flex-1 mx-auto max-w-3xl w-full px-4 sm:px-6 py-10 sm:py-14">
         {posts.length === 0 ? (
@@ -105,7 +108,7 @@ export function HomeDefault({
           </>
         )}
       </main>
-      <SiteFooter />
+      <SiteFooter siteOwnerName={siteOwnerName} />
     </div>
   )
 }

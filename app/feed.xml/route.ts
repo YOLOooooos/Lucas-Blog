@@ -1,8 +1,8 @@
 import { getAppCloudflareEnv } from '@/lib/cloudflare'
 import { getSiteUrl } from '@/lib/site-config'
+import { DEFAULT_SITE_TITLE, getSiteBranding } from '@/lib/site-branding'
 
 const SITE_URL = getSiteUrl()
-const SITE_TITLE = '乔木博客'
 const SITE_DESCRIPTION = '记录思考，分享所学，留住当下。'
 
 interface RssPost {
@@ -25,10 +25,12 @@ function escapeXml(s: string): string {
 
 export async function GET() {
   let posts: RssPost[] = []
+  let siteTitle = DEFAULT_SITE_TITLE
 
   try {
     const env = await getAppCloudflareEnv()
     if (env?.DB) {
+      siteTitle = (await getSiteBranding(env.DB)).siteTitle
       // RSS needs html field; query directly to include it
       const { results } = await env.DB
         .prepare(
@@ -63,7 +65,7 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>${SITE_TITLE}</title>
+    <title>${siteTitle}</title>
     <link>${SITE_URL}</link>
     <description>${SITE_DESCRIPTION}</description>
     <language>zh-CN</language>

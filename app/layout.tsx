@@ -9,6 +9,7 @@ import { getAppCloudflareEnv } from "@/lib/cloudflare";
 import { getSetting } from "@/lib/db";
 import { resolveDefaultSiteCoverImage } from "@/lib/default-cover-images";
 import { getSiteUrl, getSiteUrlObject } from "@/lib/site-config";
+import { DEFAULT_SITE_TITLE, getSiteBranding } from "@/lib/site-branding";
 
 const geistSans = localFont({
   src: [
@@ -37,54 +38,65 @@ const geistMono = localFont({
 const SITE_URL = getSiteUrl()
 const DEFAULT_SITE_OG_IMAGE = resolveDefaultSiteCoverImage(SITE_URL)
 
-export const metadata: Metadata = {
-  metadataBase: getSiteUrlObject(),
-  title: {
-    default: '乔木博客',
-    template: '%s · 乔木博客',
-  },
-  description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-  },
-  manifest: '/manifest.json',
-  alternates: {
-    types: {
-      'application/rss+xml': '/feed.xml',
+export async function generateMetadata(): Promise<Metadata> {
+  let siteTitle = DEFAULT_SITE_TITLE
+
+  try {
+    const env = await getAppCloudflareEnv()
+    if (env?.DB) {
+      siteTitle = (await getSiteBranding(env.DB)).siteTitle
+    }
+  } catch {}
+
+  return {
+    metadataBase: getSiteUrlObject(),
+    title: {
+      default: siteTitle,
+      template: `%s · ${siteTitle}`,
     },
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'zh_CN',
-    url: SITE_URL,
-    siteName: '乔木博客',
-    title: '乔木博客',
     description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
-    images: [
-      {
-        url: DEFAULT_SITE_OG_IMAGE,
-        width: 1280,
-        height: 720,
-        alt: '乔木博客',
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+      apple: [
+        { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      ],
+    },
+    manifest: '/manifest.json',
+    alternates: {
+      types: {
+        'application/rss+xml': '/feed.xml',
       },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: '@vista8',
-    creator: '@vista8',
-    title: '乔木博客',
-    description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
-    images: [DEFAULT_SITE_OG_IMAGE],
-  },
-};
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'zh_CN',
+      url: SITE_URL,
+      siteName: siteTitle,
+      title: siteTitle,
+      description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
+      images: [
+        {
+          url: DEFAULT_SITE_OG_IMAGE,
+          width: 1280,
+          height: 720,
+          alt: siteTitle,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      site: '@vista8',
+      creator: '@vista8',
+      title: siteTitle,
+      description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
+      images: [DEFAULT_SITE_OG_IMAGE],
+    },
+  }
+}
 
 export default async function RootLayout({
   children,

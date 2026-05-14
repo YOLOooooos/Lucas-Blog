@@ -1,5 +1,6 @@
 import { normalizeTheme, type Theme } from '@/lib/appearance'
 import { getPublicCategories, getSetting } from '@/lib/db'
+import { DEFAULT_SITE_OWNER_NAME, DEFAULT_SITE_TITLE, getSiteBranding } from '@/lib/site-branding'
 
 export interface SiteNavLink {
   label: string
@@ -16,16 +17,21 @@ export async function getSiteHeaderData(db: D1Database): Promise<{
   navLinks: SiteNavLink[]
   categories: SiteCategoryLink[]
   defaultTheme: Theme
+  siteTitle: string
+  siteOwnerName: string
 }> {
   let navLinks: SiteNavLink[] = []
   let categories: SiteCategoryLink[] = []
   let defaultTheme: Theme = 'default'
+  let siteTitle = DEFAULT_SITE_TITLE
+  let siteOwnerName = DEFAULT_SITE_OWNER_NAME
 
   try {
-    const [navJson, categoryRows, themeValue] = await Promise.all([
+    const [navJson, categoryRows, themeValue, branding] = await Promise.all([
       getSetting(db, 'nav_links'),
       getPublicCategories(db),
       getSetting(db, 'default_theme'),
+      getSiteBranding(db),
     ])
 
     if (navJson) {
@@ -45,9 +51,11 @@ export async function getSiteHeaderData(db: D1Database): Promise<{
       }))
 
     defaultTheme = normalizeTheme(themeValue)
+    siteTitle = branding.siteTitle
+    siteOwnerName = branding.siteOwnerName
   } catch {
     // Keep graceful fallback behavior for public pages
   }
 
-  return { navLinks, categories, defaultTheme }
+  return { navLinks, categories, defaultTheme, siteTitle, siteOwnerName }
 }

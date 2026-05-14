@@ -43,6 +43,8 @@ export function HomeVariantA({
   posts,
   categories,
   navLinks,
+  siteTitle,
+  siteOwnerName,
   currentPage,
   totalPages,
 }: HomeProps) {
@@ -54,6 +56,7 @@ export function HomeVariantA({
         initialTheme={initialTheme}
         navLinks={navLinks}
         categories={categories}
+        siteTitle={siteTitle}
       />
 
       <main className="refined-home-main flex-1 mx-auto w-full" style={{ maxWidth: 860, padding: '0 32px 120px' }}>
@@ -207,7 +210,7 @@ export function HomeVariantA({
         )}
       </main>
 
-      <SiteFooter />
+      <SiteFooter siteOwnerName={siteOwnerName} />
     </div>
   )
 }

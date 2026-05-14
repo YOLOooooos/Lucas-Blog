@@ -7,6 +7,7 @@ import { normalizeTheme, type BodyFont, type Theme } from '@/lib/appearance'
 import { NavLinksEditor } from './NavLinksEditor'
 import { CustomJsEditor } from './CustomJsEditor'
 import { ThemeManager } from './ThemeManager'
+import { SiteBrandingManager } from './SiteBrandingManager'
 import { CategoryManager } from '../categories/CategoryManager'
 import { AiProviderManager } from './AiProviderManager'
 import { AiActionsManager } from './AiActionsManager'
@@ -23,6 +24,8 @@ interface Category {
 }
 
 interface Props {
+  initialSiteTitle: string
+  initialSiteOwnerName: string
   initialNavLinks: string
   initialCustomJs: string
   initialCategories: Category[]
@@ -32,6 +35,8 @@ interface Props {
 }
 
 export function SettingsManager({
+  initialSiteTitle,
+  initialSiteOwnerName,
   initialNavLinks,
   initialCustomJs,
   initialCategories,
@@ -82,7 +87,49 @@ export function SettingsManager({
     }
   }
 
+  const saveBrandingSettings = async ({
+    siteTitle,
+    siteOwnerName,
+  }: {
+    siteTitle: string
+    siteOwnerName: string
+  }) => {
+    setSaving(true)
+    setMsg('')
+    try {
+      await Promise.all([
+        persistSetting('site_title', siteTitle),
+        persistSetting('site_owner_name', siteOwnerName),
+      ])
+      setMsg('已保存')
+      setTimeout(() => setMsg(''), 2000)
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : '保存失败')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const tabs = [
+    {
+      id: 'branding',
+      label: '基础信息',
+      content: (
+        <div className="space-y-4">
+          {msg && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+              {msg}
+            </div>
+          )}
+          <SiteBrandingManager
+            initialSiteTitle={initialSiteTitle}
+            initialSiteOwnerName={initialSiteOwnerName}
+            onSave={saveBrandingSettings}
+            saving={saving}
+          />
+        </div>
+      ),
+    },
     {
       id: 'nav',
       label: '导航设置',
@@ -176,5 +223,5 @@ export function SettingsManager({
     },
   ]
 
-  return <Tabs tabs={tabs} defaultTab="nav" />
+  return <Tabs tabs={tabs} defaultTab="branding" />
 }

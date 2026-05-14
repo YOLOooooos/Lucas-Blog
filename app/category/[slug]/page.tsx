@@ -81,6 +81,7 @@ export default async function CategoryPage({
         navLinks={headerData.navLinks}
         categories={headerData.categories}
         activeCategorySlug={slug}
+        siteTitle={headerData.siteTitle}
       />
 
       <main className="page-main flex-1 mx-auto max-w-3xl w-full px-4 sm:px-6 py-10 sm:py-14">
@@ -148,7 +149,7 @@ export default async function CategoryPage({
         )}
       </main>
 
-      <SiteFooter />
+      <SiteFooter siteOwnerName={headerData.siteOwnerName} />
     </div>
   )
 }

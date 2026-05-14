@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { LogoutButton } from './LogoutButton'
 import { PenLine, ExternalLink } from 'lucide-react'
 import { AdminFooter } from '@/components/AdminFooter'
+import { getAppCloudflareEnv } from '@/lib/cloudflare'
+import { DEFAULT_SITE_OWNER_NAME, DEFAULT_SITE_TITLE, getSiteBranding } from '@/lib/site-branding'
 
 export default async function AdminProtectedLayout({
   children,
@@ -18,6 +20,17 @@ export default async function AdminProtectedLayout({
     redirect('/admin/login')
   }
 
+  let siteTitle = DEFAULT_SITE_TITLE
+  let siteOwnerName = DEFAULT_SITE_OWNER_NAME
+  try {
+    const env = await getAppCloudflareEnv()
+    if (env?.DB) {
+      const branding = await getSiteBranding(env.DB)
+      siteTitle = branding.siteTitle
+      siteOwnerName = branding.siteOwnerName
+    }
+  } catch {}
+
   const navCls = 'px-3 py-2 rounded-lg text-sm text-[var(--editor-muted)] hover:text-[var(--editor-ink)] hover:bg-[var(--editor-soft)] transition-all duration-150 whitespace-nowrap'
 
   return (
@@ -30,7 +43,7 @@ export default async function AdminProtectedLayout({
               className="text-lg tracking-tight text-[var(--editor-ink)] hover:text-[var(--editor-accent)] transition-colors duration-200"
               style={{ fontFamily: 'Georgia, "Noto Serif SC", serif', fontWeight: 500 }}
             >
-              乔木博客
+              {siteTitle}
             </Link>
             <span className="text-[var(--editor-line)] hidden sm:inline">/</span>
             <span className="text-[var(--stone-gray)] hidden sm:inline">管理后台</span>
@@ -62,7 +75,7 @@ export default async function AdminProtectedLayout({
 
       <main className="mx-auto max-w-6xl w-full px-4 sm:px-6 py-8 flex-1">{children}</main>
 
-      <AdminFooter />
+      <AdminFooter siteOwnerName={siteOwnerName} />
     </div>
   )
 }

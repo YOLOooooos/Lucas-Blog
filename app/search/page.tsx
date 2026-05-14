@@ -6,6 +6,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 import type { SiteCategoryLink, SiteNavLink } from '@/lib/site'
 import { getSiteHeaderData } from '@/lib/site'
 import type { Theme } from '@/lib/appearance'
+import { DEFAULT_SITE_OWNER_NAME, DEFAULT_SITE_TITLE } from '@/lib/site-branding'
 
 export const metadata = {
   title: '搜索结果',
@@ -32,6 +33,8 @@ export default async function SearchPage({
   let navLinks: SiteNavLink[] = []
   let categories: SiteCategoryLink[] = []
   let defaultTheme: Theme = 'default'
+  let siteTitle = DEFAULT_SITE_TITLE
+  let siteOwnerName = DEFAULT_SITE_OWNER_NAME
 
   try {
     const env = await getAppCloudflareEnv()
@@ -40,6 +43,8 @@ export default async function SearchPage({
       navLinks = headerData.navLinks
       categories = headerData.categories
       defaultTheme = headerData.defaultTheme
+      siteTitle = headerData.siteTitle
+      siteOwnerName = headerData.siteOwnerName
 
       if (query) {
         posts = await searchPosts(env.DB, query, 100)
@@ -57,6 +62,7 @@ export default async function SearchPage({
         initialTheme={defaultTheme}
         navLinks={navLinks}
         categories={categories}
+        siteTitle={siteTitle}
       />
 
       <main className="page-main flex-1 mx-auto max-w-3xl w-full px-4 sm:px-6 py-10 sm:py-14">
@@ -157,7 +163,7 @@ export default async function SearchPage({
         ) : null}
       </main>
 
-      <SiteFooter />
+      <SiteFooter siteOwnerName={siteOwnerName} />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import type { SiteCategoryLink, SiteNavLink } from '@/lib/site'
 import { getSiteHeaderData } from '@/lib/site'
 import { HomeClient } from '@/components/HomeClient'
 import { getSiteUrl } from '@/lib/site-config'
+import { DEFAULT_SITE_OWNER_NAME, DEFAULT_SITE_TITLE } from '@/lib/site-branding'
 
 const PAGE_SIZE = 25
 const BASE_URL = getSiteUrl()
@@ -32,6 +33,8 @@ export default async function Home({
   let navLinks: SiteNavLink[] = []
   let categories: SiteCategoryLink[] = []
   let defaultTheme: Theme = 'default'
+  let siteTitle = DEFAULT_SITE_TITLE
+  let siteOwnerName = DEFAULT_SITE_OWNER_NAME
   try {
     const env = await getAppCloudflareEnv()
     if (env?.DB) {
@@ -43,6 +46,8 @@ export default async function Home({
       navLinks = headerData.navLinks
       categories = headerData.categories
       defaultTheme = headerData.defaultTheme
+      siteTitle = headerData.siteTitle
+      siteOwnerName = headerData.siteOwnerName
     }
   } catch (e) {
     console.error('Homepage: failed to fetch posts', e)
@@ -61,7 +66,7 @@ export default async function Home({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
-            name: '乔木博客',
+            name: siteTitle,
             url: BASE_URL,
             description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
             potentialAction: {
@@ -78,7 +83,7 @@ export default async function Home({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: '乔木博客',
+            name: siteTitle,
             url: BASE_URL,
             logo: { '@type': 'ImageObject', url: `${BASE_URL}/icon-512.png` },
           }),
@@ -89,6 +94,8 @@ export default async function Home({
         posts={posts}
         categories={categories}
         navLinks={navLinks}
+        siteTitle={siteTitle}
+        siteOwnerName={siteOwnerName}
         currentPage={currentPage}
         totalPages={totalPages}
         categorySlugMap={categorySlugMap}

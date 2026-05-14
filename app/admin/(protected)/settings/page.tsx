@@ -1,6 +1,7 @@
 import { getAppCloudflareEnv } from '@/lib/cloudflare'
 import { getSetting, getCategories } from '@/lib/db'
 import { detectRuntimeCapabilities } from '@/lib/runtime-capabilities'
+import { getSiteBranding } from '@/lib/site-branding'
 import { SettingsManager } from './SettingsManager'
 
 export const metadata = { title: '站点设置' }
@@ -10,6 +11,8 @@ export default async function SettingsPage() {
   let customJs = ''
   let bodyFont = ''
   let defaultTheme = ''
+  let siteTitle = ''
+  let siteOwnerName = ''
   let categories: Awaited<ReturnType<typeof getCategories>> = []
   let runtimeCapabilities = detectRuntimeCapabilities()
 
@@ -17,10 +20,13 @@ export default async function SettingsPage() {
     const env = await getAppCloudflareEnv()
     runtimeCapabilities = detectRuntimeCapabilities(env)
     if (env?.DB) {
+      const branding = await getSiteBranding(env.DB)
       navLinks = (await getSetting(env.DB, 'nav_links')) || ''
       customJs = (await getSetting(env.DB, 'custom_js')) || ''
       bodyFont = (await getSetting(env.DB, 'body_font')) || ''
       defaultTheme = (await getSetting(env.DB, 'default_theme')) || ''
+      siteTitle = branding.siteTitle
+      siteOwnerName = branding.siteOwnerName
       categories = await getCategories(env.DB)
     }
   } catch {}
@@ -34,6 +40,8 @@ export default async function SettingsPage() {
         站点设置
       </h1>
       <SettingsManager
+        initialSiteTitle={siteTitle}
+        initialSiteOwnerName={siteOwnerName}
         initialNavLinks={navLinks}
         initialCustomJs={customJs}
         initialCategories={categories}

@@ -14,6 +14,7 @@ import { getRelatedPosts } from '@/lib/related-content'
 import { getPublicContentCacheNamespace } from '@/lib/cache'
 import { getSiteUrl } from '@/lib/site-config'
 import { resolvePostCoverImage } from '@/lib/default-cover-images'
+import { getSiteBranding } from '@/lib/site-branding'
 
 // Cloudflare Workers 缓存策略
 export const revalidate = 86400 // 24小时缓存
@@ -34,6 +35,7 @@ export async function generateMetadata({
     const post = await getPostBySlug(env.DB, slug, getPublicContentCacheNamespace(env)).catch(() => null)
     if (!post || !isPubliclyAccessiblePost(post)) return {}
     const searchIndexable = isSearchIndexablePost(post)
+    const branding = await getSiteBranding(env.DB)
 
     const ogImage = resolvePostCoverImage(post, { baseUrl })
 
@@ -49,7 +51,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.description,
       robots: searchIndexable ? undefined : { index: false, follow: false },
-      authors: [{ name: '向阳乔木' }],
+      authors: [{ name: branding.siteOwnerName }],
       alternates: {
         canonical: `${baseUrl}/${post.slug}`,
       },
@@ -59,7 +61,7 @@ export async function generateMetadata({
         type: 'article',
         publishedTime: new Date(post.published_at * 1000).toISOString(),
         modifiedTime: new Date(post.updated_at * 1000).toISOString(),
-        authors: ['向阳乔木'],
+        authors: [branding.siteOwnerName],
         images: [{ url: ogImage }],
       },
       twitter: {
@@ -117,6 +119,7 @@ export default async function PostPage({
             categories={headerData.categories}
             activeCategorySlug={activeCategorySlug}
             stickyOnMobile={false}
+            siteTitle={headerData.siteTitle}
           />
           <main className="page-main mx-auto w-full max-w-3xl px-4 sm:px-6 flex-1 py-8 sm:py-12">
             <FrontPostAdminBoundary
@@ -133,7 +136,7 @@ export default async function PostPage({
               <PasswordPrompt />
             </FrontPostAdminBoundary>
           </main>
-          <SiteFooter />
+          <SiteFooter siteOwnerName={headerData.siteOwnerName} />
         </div>
       )
     }
@@ -149,6 +152,7 @@ export default async function PostPage({
             categories={headerData.categories}
             activeCategorySlug={activeCategorySlug}
             stickyOnMobile={false}
+            siteTitle={headerData.siteTitle}
           />
           <main className="page-main mx-auto w-full max-w-3xl px-4 sm:px-6 flex-1 py-8 sm:py-12">
             <FrontPostAdminBoundary
@@ -165,7 +169,7 @@ export default async function PostPage({
               <PasswordPrompt error={passwordError} />
             </FrontPostAdminBoundary>
           </main>
-          <SiteFooter />
+          <SiteFooter siteOwnerName={headerData.siteOwnerName} />
         </div>
       )
     }
@@ -191,6 +195,7 @@ export default async function PostPage({
         categories={headerData.categories}
         activeCategorySlug={activeCategorySlug}
         stickyOnMobile={false}
+        siteTitle={headerData.siteTitle}
       />
 
       <main className="page-main mx-auto w-full max-w-3xl px-4 sm:px-6 flex-1 py-8 sm:py-12">
@@ -203,8 +208,8 @@ export default async function PostPage({
             headline: post.title,
             description: post.description || '',
             image: ogImage,
-            author: { '@type': 'Person', name: '向阳乔木', url: 'https://x.com/vista8' },
-            publisher: { '@type': 'Organization', name: '乔木博客', url: baseUrl, logo: { '@type': 'ImageObject', url: `${baseUrl}/icon-512.png` } },
+            author: { '@type': 'Person', name: headerData.siteOwnerName, url: 'https://x.com/vista8' },
+            publisher: { '@type': 'Organization', name: headerData.siteTitle, url: baseUrl, logo: { '@type': 'ImageObject', url: `${baseUrl}/icon-512.png` } },
             datePublished: new Date(post.published_at * 1000).toISOString(),
             dateModified: new Date(post.updated_at * 1000).toISOString(),
             mainEntityOfPage: { '@type': 'WebPage', '@id': `${baseUrl}/${post.slug}` },
@@ -343,7 +348,7 @@ export default async function PostPage({
         </FrontPostAdminBoundary>
       </main>
 
-      <SiteFooter />
+      <SiteFooter siteOwnerName={headerData.siteOwnerName} />
     </div>
   )
 }

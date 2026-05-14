@@ -3,8 +3,13 @@
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { refreshAdminSession, useAdminSession } from '@/lib/admin-session-client'
+import { DEFAULT_SITE_OWNER_NAME } from '@/lib/site-branding'
 
-export function SiteFooter() {
+interface SiteFooterProps {
+  siteOwnerName?: string
+}
+
+export function SiteFooter({ siteOwnerName = DEFAULT_SITE_OWNER_NAME }: SiteFooterProps) {
   const [open, setOpen] = useState(false)
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -60,7 +65,7 @@ export function SiteFooter() {
                 href="/admin"
                 className="hover:text-[var(--editor-ink)] transition-colors duration-150 underline-offset-2 hover:underline"
               >
-                向阳乔木
+                {siteOwnerName}
               </Link>
               <span>·</span>
               <Link
@@ -81,7 +86,7 @@ export function SiteFooter() {
               onClick={() => setOpen(true)}
               className="hover:text-[var(--editor-ink)] transition-colors duration-150 underline-offset-2 hover:underline"
             >
-              向阳乔木
+              {siteOwnerName}
             </button>
           )}
         </div>
