@@ -22,7 +22,7 @@ export function Tabs({ tabs, defaultTab }: TabsProps) {
     <div>
       {/* Tab 导航 */}
       <div className="border-b border-[var(--editor-line)] mb-6">
-        <div className="flex gap-1 overflow-x-auto whitespace-nowrap pb-1">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide whitespace-nowrap pb-1">
           {tabs.map(tab => (
             <button
               key={tab.id}
