@@ -19,7 +19,7 @@ describe('default cover images', () => {
   it('falls back to a bundled default cover when no explicit cover is set', () => {
     const cover = resolvePostCoverImage(
       { slug: 'missing-cover', title: 'No cover here' },
-      { baseUrl: 'https://blog.qiaomu.ai' },
+      { baseUrl: 'http://lucas007.top' },
     )
 
     expect(cover).toMatch(/^https:\/\/blog\.qiaomu\.ai\/default-covers\/qm-cover-[1-3]\.jpg$/)
@@ -28,17 +28,17 @@ describe('default cover images', () => {
   it('prefers the explicit cover image and resolves relative paths', () => {
     expect(resolvePostCoverImage(
       { cover_image: '/api/images/example.png', slug: 'post-slug', title: 'Post title' },
-      { baseUrl: 'https://blog.qiaomu.ai' },
-    )).toBe('https://blog.qiaomu.ai/api/images/example.png')
+      { baseUrl: 'http://lucas007.top' },
+    )).toBe('http://lucas007.top/api/images/example.png')
 
     expect(resolvePostCoverImage(
       { cover_image: 'https://cdn.example.com/cover.jpg', slug: 'post-slug', title: 'Post title' },
-      { baseUrl: 'https://blog.qiaomu.ai' },
+      { baseUrl: 'http://lucas007.top' },
     )).toBe('https://cdn.example.com/cover.jpg')
   })
 
   it('resolves the site-wide fallback cover image', () => {
-    expect(resolveDefaultSiteCoverImage('https://blog.qiaomu.ai'))
-      .toBe('https://blog.qiaomu.ai/default-covers/qm-cover-1.jpg')
+    expect(resolveDefaultSiteCoverImage('http://lucas007.top'))
+      .toBe('http://lucas007.top/default-covers/qm-cover-1.jpg')
   })
 })
