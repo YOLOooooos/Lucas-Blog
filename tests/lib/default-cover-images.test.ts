@@ -22,7 +22,7 @@ describe('default cover images', () => {
       { baseUrl: 'http://lucas007.top' },
     )
 
-    expect(cover).toMatch(/^https:\/\/blog\.qiaomu\.ai\/default-covers\/qm-cover-[1-3]\.jpg$/)
+    expect(cover).toMatch(/^http:\/\/lucas007\.top\/default-covers\/qm-cover-[1-3]\.jpg$/)
   })
 
   it('prefers the explicit cover image and resolves relative paths', () => {
