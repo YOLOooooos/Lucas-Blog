@@ -73,6 +73,7 @@ import {
   TRIGGER_INPUT_MODAL_EVENT,
 } from './editor-events'
 import { shouldShowEditorBubble } from './editor-bubble'
+import { EditorCodeBlock } from './editor-code-block'
 import { createDefaultTableContent, hasMarkdownTable, normalizeUrl } from './editor-utils'
 
 const md = markdownit({ html: true })
@@ -382,7 +383,8 @@ export interface EditorExtensionOptions {
 
 export function createEditorExtensions(options: EditorExtensionOptions = {}) {
   return [
-    StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+    StarterKit.configure({ codeBlock: false, heading: { levels: [1, 2, 3] } }),
+    EditorCodeBlock,
     TextStyle,
     Color,
     HighlightExtension,
